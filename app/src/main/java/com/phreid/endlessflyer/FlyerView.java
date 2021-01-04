@@ -96,12 +96,9 @@ public class FlyerView extends SurfaceView implements Runnable {
         starSize = getWidth() * 0.1f;
         minEnemyVelocity = getWidth() / 150;
         maxEnemyVelocity = getWidth() / 75;
-        Log.d("ZZZ", String.valueOf(getHeight()));
         defaultAccelY = getHeight() * 0.0025f;
         defaultOnTouchAccel = getHeight() * -0.0015f;
         maxPlayerVelocity = getHeight() / 100;
-        Log.d("ZZZ", String.valueOf(defaultAccelY));
-        Log.d("ZZZ", String.valueOf(defaultOnTouchAccel));
 
         playerImage = BitmapFactory.decodeResource(getResources(), R.drawable.green);
         spriteImage = BitmapFactory.decodeResource(getResources(), R.drawable.red);
@@ -128,8 +125,6 @@ public class FlyerView extends SurfaceView implements Runnable {
         floorRect = new RectF(0, getHeight() - FLOOR_MARGIN,
                 getWidth(), getHeight());
         floorPaint.setARGB(255,84, 84, 84);
-
-        //animate(60);
     }
 
     void onTick(Canvas canvas) {
@@ -215,11 +210,6 @@ public class FlyerView extends SurfaceView implements Runnable {
 
         starList.add(star);
     }
-
-//    public void animate(int fps) {
-//        loop = new AnimationLoop(this, fps);
-//        loop.start();
-//    }
 
     public boolean onTouchEvent(MotionEvent event) {
         if (event.getAction() == MotionEvent.ACTION_DOWN) {
@@ -310,7 +300,7 @@ public class FlyerView extends SurfaceView implements Runnable {
         try {
             gameThread.join();
         } catch (InterruptedException e) {
-            ;
+            e.printStackTrace();
         }
     }
 
