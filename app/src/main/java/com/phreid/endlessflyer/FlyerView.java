@@ -13,22 +13,25 @@ import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
+import com.phreid.endlessflyer.sprite.AbstractSprite;
+import com.phreid.endlessflyer.sprite.AnimatedSprite;
+import com.phreid.endlessflyer.sprite.CircleSprite;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
 public class FlyerView extends SurfaceView implements Runnable {
     private boolean initialized = false;
-    private Sprite player;
+    private CircleSprite player;
     private int frameCount = 0;
-    private List<Sprite> spriteList = new ArrayList<>();
-    private List<Sprite> starList = new ArrayList<>();
-    private List<Sprite> toRemove = new ArrayList<>();
+    private List<CircleSprite> enemyList = new ArrayList<>();
+    private List<AnimatedSprite> starList = new ArrayList<>();
+    private List<AbstractSprite> toRemove = new ArrayList<>();
     private Random random = new Random();
     private Bitmap playerImage;
     private Bitmap spriteImage;
     private List<Bitmap> starImageList = new ArrayList<>();
-    //private AnimationLoop loop;
     private int score = 0;
     private Paint textPaint = new Paint();
     private Paint floorPaint = new Paint();
@@ -48,7 +51,6 @@ public class FlyerView extends SurfaceView implements Runnable {
     private Thread gameThread;
     private boolean isRunning;
 
-
     private static final int SPRITE_CREATE_INTERVAL = 120;
     private static final int STAR_CREATE_INTERVAL = 240;
     private static final int CEILING_MARGIN = 75;
@@ -61,17 +63,17 @@ public class FlyerView extends SurfaceView implements Runnable {
     }
 
     private void drawSprites(Canvas canvas) {
-        player.setCanvas(canvas);
-        player.draw();
+        //player.setCanvas(canvas);
+        player.draw(canvas);
 
-        for (Sprite sprite : spriteList) {
-            sprite.setCanvas(canvas);
-            sprite.draw();
+        for (CircleSprite sprite : enemyList) {
+            //sprite.setCanvas(canvas);
+            sprite.draw(canvas);
         }
 
-        for (Sprite star : starList) {
-            star.setCanvas(canvas);
-            star.draw();
+        for (AnimatedSprite star : starList) {
+            //star.setCanvas(canvas);
+            star.draw(canvas);
         }
 
         canvas.drawText("Score: " + score, getWidth() / 2f - 50, 40 + CEILING_MARGIN,
@@ -92,7 +94,7 @@ public class FlyerView extends SurfaceView implements Runnable {
     void init() {
         initialized = true;
 
-        circleSize = getWidth() * 0.1f;
+        circleSize = getWidth() * 0.05f;
         starSize = getWidth() * 0.1f;
         minEnemyVelocity = getWidth() / 150;
         maxEnemyVelocity = getWidth() / 75;
@@ -108,14 +110,23 @@ public class FlyerView extends SurfaceView implements Runnable {
         starImageList.add(BitmapFactory.decodeResource(getResources(), R.drawable.bluestar2));
         starImageList.add(BitmapFactory.decodeResource(getResources(), R.drawable.bluestar3));
 
-        player = new Sprite(this,
-                playerImage,
-                10,
-                (getHeight() - (FLOOR_MARGIN + CEILING_MARGIN)) / 2,
-                circleSize,
-                circleSize);
+//        player = new Sprite(this,
+//                playerImage,
+//                10,
+//                (getHeight() - (FLOOR_MARGIN + CEILING_MARGIN)) / 2,
+//                circleSize,
+//                circleSize);
+        player = new CircleSprite(
+                getWidth() * 0.1f,
+                (getHeight() - (FLOOR_MARGIN + CEILING_MARGIN)) / 2f,
+                circleSize
+        );
         player.setMaxVelocityY(maxPlayerVelocity);
-        player.setCollisionMargin(CIRCLE_COLLISION_MARGIN);
+        Paint paint = new Paint();
+        paint.setARGB(255, 0, 255, 0);
+        player.setPaint(paint);
+        //player.setCollisionMargin(CIRCLE_COLLISION_MARGIN);
+        //player.setCollisionDebug();
 
         textPaint.setARGB(255, 0, 0, 0);
         textPaint.setTextSize(40);
@@ -139,7 +150,7 @@ public class FlyerView extends SurfaceView implements Runnable {
         }
 
         if (frameCount % SPRITE_CREATE_INTERVAL == 0) {
-            addRandomSprites(random.nextInt(maxNumCircles) + 1);
+            addRandomEnemies(random.nextInt(maxNumCircles) + 1);
         }
 
         if (frameCount % STAR_CREATE_INTERVAL == 0) {
@@ -149,26 +160,27 @@ public class FlyerView extends SurfaceView implements Runnable {
         player.move();
 
         doPlayerBehavior();
-        doSpriteBehavior();
+        doEnemyBehavior();
         doStarBehavior();
 
-        for (Sprite sprite : toRemove) {
-            spriteList.remove(sprite);
+        for (AbstractSprite sprite : toRemove) {
+            enemyList.remove(sprite);
             starList.remove(sprite);
         }
+        toRemove.clear();
 
         drawSprites(canvas);
     }
 
     private void doPlayerBehavior() {
-        if (player.getBottomBound() > getHeight() - FLOOR_MARGIN ||
-                player.getTopBound() < CEILING_MARGIN) {
+        if (player.getY() + circleSize > getHeight() - FLOOR_MARGIN ||
+                player.getY() - circleSize < CEILING_MARGIN) {
             endGame();
         }
     }
 
     private void doStarBehavior() {
-        for (Sprite star : starList) {
+        for (AnimatedSprite star : starList) {
             if (star.collidesWith(player)) {
                 toRemove.add(star);
                 score++;
@@ -185,6 +197,7 @@ public class FlyerView extends SurfaceView implements Runnable {
             }
 
             star.move();
+            star.updateBitmap(frameCount);
         }
     }
 
@@ -196,17 +209,11 @@ public class FlyerView extends SurfaceView implements Runnable {
                 .nextInt(getHeight() - FLOOR_MARGIN - ((int) starSize * 2))
                 + CEILING_MARGIN;
 
-        Sprite star = new Sprite(this, starImageList.get(0),
-                xPos,
-                yPos,
-                starSize,
-                starSize);
+        AnimatedSprite star = new AnimatedSprite(starImageList, xPos, yPos, starSize);
         star.setVelocityX(dx);
         star.setVelocityY(dy);
 
-        star.addToBitmapList(starImageList.get(1));
-        star.addToBitmapList(starImageList.get(2));
-        star.addToBitmapList(starImageList.get(3));
+        star.setCollisionDebug();
 
         starList.add(star);
     }
@@ -222,36 +229,36 @@ public class FlyerView extends SurfaceView implements Runnable {
         return super.onTouchEvent(event);
     }
 
-    public boolean isInitialized() {
-        return initialized;
-    }
-
-    private void addRandomSprites(int numSprites) {
+    private void addRandomEnemies(int numSprites) {
         for (int i = 0; i < numSprites; i++) {
             int dx = -1 * (random.nextInt(maxEnemyVelocity) + minEnemyVelocity);
-            int xPos = getWidth();
-            int yPos = random
-                    .nextInt(getHeight() - FLOOR_MARGIN - ((int) circleSize * 2))
-                    + CEILING_MARGIN;
+            float xPos = getWidth();
+            float yPos = random.nextInt(getHeight() - FLOOR_MARGIN - ((int) circleSize * 2))
+                    + CEILING_MARGIN + circleSize;
+            Paint paint = new Paint();
+            paint.setARGB(255, 255, 0, 0);
 
-            Sprite sprite = new Sprite(this, spriteImage,
-                    xPos,
-                    yPos,
-                    circleSize,
-                    circleSize);
+//            Sprite sprite = new Sprite(this, spriteImage,
+//                    xPos,
+//                    yPos,
+//                    circleSize,
+//                    circleSize);
+            CircleSprite sprite = new CircleSprite(xPos, yPos, circleSize);
+            sprite.setPaint(paint);
             sprite.setVelocityX(dx);
-            sprite.setCollisionMargin(CIRCLE_COLLISION_MARGIN);
-            spriteList.add(sprite);
+//            sprite.setCollisionMargin(CIRCLE_COLLISION_MARGIN);
+//            sprite.setCollisionDebug();
+            enemyList.add(sprite);
         }
     }
 
-    private void doSpriteBehavior() {
-        for (Sprite sprite : spriteList) {
+    private void doEnemyBehavior() {
+        for (CircleSprite sprite : enemyList) {
             if (sprite.collidesWith(player)) {
                 endGame();
             }
 
-            if (sprite.getRightBound() < 0) {
+            if (sprite.getX() + circleSize < 0) {
                 toRemove.add(sprite);
             }
 
