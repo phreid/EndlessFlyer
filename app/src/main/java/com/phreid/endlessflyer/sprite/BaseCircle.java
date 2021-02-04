@@ -47,4 +47,8 @@ public class BaseCircle {
     public float getRadius() {
         return radius;
     }
+
+    public Paint getPaint() {
+        return paint;
+    }
 }

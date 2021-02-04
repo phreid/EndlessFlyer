@@ -9,7 +9,6 @@ import java.util.List;
 
 public class AnimatedSprite extends AbstractSprite {
     private RectF positionRect;
-    private BaseCircle collisionCircle;
     private final List<Bitmap> bitmapList;
     private int currentBitmap;
     private boolean debug = false;
@@ -18,23 +17,10 @@ public class AnimatedSprite extends AbstractSprite {
     private final int updateBitmapInterval = 4;
 
     public AnimatedSprite(List<Bitmap> bitmapList, float x, float y, float length) {
+        super(x + (length / 2),y + (length / 2),length / 2);
         this.bitmapList = bitmapList;
         this.positionRect = new RectF(x, y, x + length, y + length);
-        this.collisionCircle = new BaseCircle(
-                x + (length / 2),
-                y + (length / 2),
-                length / 2);
         currentBitmap = 0;
-    }
-
-    @Override
-    public float getY() {
-        return 0;
-    }
-
-    @Override
-    public float getX() {
-        return 0;
     }
 
     @Override

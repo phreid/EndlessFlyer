@@ -12,11 +12,23 @@ public abstract class AbstractSprite {
     protected float accelerationX = 0;
     protected float accelerationY = 0;
 
+    public AbstractSprite(float x, float y, float radius) {
+        collisionCircle = new BaseCircle(x, y, radius);
+    }
+
     public abstract void draw(Canvas canvas);
 
     public abstract void move();
 
     public abstract boolean collidesWith(AbstractSprite other);
+
+    public void setPaint(Paint paint) {
+        collisionCircle.setPaint(paint);
+    }
+
+    public Paint getPaint() {
+        return collisionCircle.getPaint();
+    }
 
     public void setVelocityX(float dx) {
         this.dx = dx;
@@ -42,13 +54,13 @@ public abstract class AbstractSprite {
         this.accelerationY = accelerationY;
     }
 
-    public void setPaint(Paint paint) {
-        collisionCircle.setPaint(paint);
+    public float getY() {
+        return collisionCircle.getY();
     }
 
-    public abstract float getY();
-
-    public abstract float getX();
+    public float getX() {
+        return collisionCircle.getX();
+    };
 
     public float getVelocityY() {
         return dy;

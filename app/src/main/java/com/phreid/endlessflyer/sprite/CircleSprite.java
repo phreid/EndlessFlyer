@@ -1,11 +1,12 @@
 package com.phreid.endlessflyer.sprite;
 
 import android.graphics.Canvas;
+import android.graphics.Paint;
 
 public class CircleSprite extends AbstractSprite {
 
     public CircleSprite(float x, float y, float radius) {
-        collisionCircle = new BaseCircle(x, y, radius);
+        super(x, y, radius);
     }
 
     @Override
@@ -29,15 +30,5 @@ public class CircleSprite extends AbstractSprite {
     @Override
     public boolean collidesWith(AbstractSprite other) {
         return collisionCircle.collidesWith(other.collisionCircle);
-    }
-
-    @Override
-    public float getY() {
-        return collisionCircle.getY();
-    }
-
-    @Override
-    public float getX() {
-        return collisionCircle.getX();
     }
 }

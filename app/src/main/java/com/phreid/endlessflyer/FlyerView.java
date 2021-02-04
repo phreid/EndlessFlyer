@@ -16,6 +16,7 @@ import android.view.SurfaceView;
 import com.phreid.endlessflyer.sprite.AbstractSprite;
 import com.phreid.endlessflyer.sprite.AnimatedSprite;
 import com.phreid.endlessflyer.sprite.CircleSprite;
+import com.phreid.endlessflyer.sprite.Explosion;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,8 +30,6 @@ public class FlyerView extends SurfaceView implements Runnable {
     private List<AnimatedSprite> starList = new ArrayList<>();
     private List<AbstractSprite> toRemove = new ArrayList<>();
     private Random random = new Random();
-    private Bitmap playerImage;
-    private Bitmap spriteImage;
     private List<Bitmap> starImageList = new ArrayList<>();
     private int score = 0;
     private Paint textPaint = new Paint();
@@ -39,41 +38,42 @@ public class FlyerView extends SurfaceView implements Runnable {
     private RectF ceilingRect;
     private float circleSize;
     private float starSize;
-    private int maxNumCircles = 4;
     private Context context;
     private float defaultOnTouchAccel;
     private float defaultAccelY;
     private int maxEnemyVelocity;
     private int minEnemyVelocity;
     private int maxPlayerVelocity;
+    private boolean gameOver = false;
+    private Explosion explosion;
 
     private SurfaceHolder holder = getHolder();
     private Thread gameThread;
     private boolean isRunning;
 
-    private static final int SPRITE_CREATE_INTERVAL = 120;
+    private static final int ENEMY_CREATE_INTERVAL = 20;
     private static final int STAR_CREATE_INTERVAL = 240;
     private static final int CEILING_MARGIN = 75;
     private static final int FLOOR_MARGIN = 200;
     private static final int INCREASE_NUM_CIRCLE_INTERVAL = 720;
-    private static final int CIRCLE_COLLISION_MARGIN = 17;
 
     public FlyerView(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
 
     private void drawSprites(Canvas canvas) {
-        //player.setCanvas(canvas);
-        player.draw(canvas);
+        if (! gameOver) {
+            player.draw(canvas);
 
-        for (CircleSprite sprite : enemyList) {
-            //sprite.setCanvas(canvas);
-            sprite.draw(canvas);
-        }
+            for (CircleSprite sprite : enemyList) {
+                sprite.draw(canvas);
+            }
 
-        for (AnimatedSprite star : starList) {
-            //star.setCanvas(canvas);
-            star.draw(canvas);
+            for (AnimatedSprite star : starList) {
+                star.draw(canvas);
+            }
+        } else {
+            explosion.update(canvas);
         }
 
         canvas.drawText("Score: " + score, getWidth() / 2f - 50, 40 + CEILING_MARGIN,
@@ -102,20 +102,11 @@ public class FlyerView extends SurfaceView implements Runnable {
         defaultOnTouchAccel = getHeight() * -0.0015f;
         maxPlayerVelocity = getHeight() / 100;
 
-        playerImage = BitmapFactory.decodeResource(getResources(), R.drawable.green);
-        spriteImage = BitmapFactory.decodeResource(getResources(), R.drawable.red);
-
         starImageList.add(BitmapFactory.decodeResource(getResources(), R.drawable.bluestar0));
         starImageList.add(BitmapFactory.decodeResource(getResources(), R.drawable.bluestar1));
         starImageList.add(BitmapFactory.decodeResource(getResources(), R.drawable.bluestar2));
         starImageList.add(BitmapFactory.decodeResource(getResources(), R.drawable.bluestar3));
 
-//        player = new Sprite(this,
-//                playerImage,
-//                10,
-//                (getHeight() - (FLOOR_MARGIN + CEILING_MARGIN)) / 2,
-//                circleSize,
-//                circleSize);
         player = new CircleSprite(
                 getWidth() * 0.1f,
                 (getHeight() - (FLOOR_MARGIN + CEILING_MARGIN)) / 2f,
@@ -125,8 +116,6 @@ public class FlyerView extends SurfaceView implements Runnable {
         Paint paint = new Paint();
         paint.setARGB(255, 0, 255, 0);
         player.setPaint(paint);
-        //player.setCollisionMargin(CIRCLE_COLLISION_MARGIN);
-        //player.setCollisionDebug();
 
         textPaint.setARGB(255, 0, 0, 0);
         textPaint.setTextSize(40);
@@ -141,41 +130,44 @@ public class FlyerView extends SurfaceView implements Runnable {
     void onTick(Canvas canvas) {
         frameCount++;
 
-        if (frameCount == 30) {
-            player.setAccelerationY(defaultAccelY);
+        if (! gameOver) {
+            if (frameCount == 30) {
+                player.setAccelerationY(defaultAccelY);
+            }
+
+            if (frameCount % ENEMY_CREATE_INTERVAL == 0) {
+                addRandomEnemies(1);
+            }
+
+            if (frameCount % STAR_CREATE_INTERVAL == 0) {
+                addRandomStar();
+            }
+
+            doPlayerBehavior();
+            doEnemyBehavior();
+            doStarBehavior();
+
+            for (AbstractSprite sprite : toRemove) {
+                enemyList.remove(sprite);
+                starList.remove(sprite);
+            }
+            toRemove.clear();
+        } else {
+            if (! explosion.isAlive()) {
+                endGame();
+            }
         }
 
-        if (frameCount % INCREASE_NUM_CIRCLE_INTERVAL == 0) {
-            maxNumCircles++;
-        }
-
-        if (frameCount % SPRITE_CREATE_INTERVAL == 0) {
-            addRandomEnemies(random.nextInt(maxNumCircles) + 1);
-        }
-
-        if (frameCount % STAR_CREATE_INTERVAL == 0) {
-            addRandomStar();
-        }
-
-        player.move();
-
-        doPlayerBehavior();
-        doEnemyBehavior();
-        doStarBehavior();
-
-        for (AbstractSprite sprite : toRemove) {
-            enemyList.remove(sprite);
-            starList.remove(sprite);
-        }
-        toRemove.clear();
 
         drawSprites(canvas);
     }
 
     private void doPlayerBehavior() {
-        if (player.getY() + circleSize > getHeight() - FLOOR_MARGIN ||
-                player.getY() - circleSize < CEILING_MARGIN) {
-            endGame();
+        player.move();
+
+        if ((player.getY() + circleSize > getHeight() - FLOOR_MARGIN ||
+                player.getY() - circleSize < CEILING_MARGIN) && (! gameOver)) {
+            setGameOver();
         }
     }
 
@@ -219,6 +211,8 @@ public class FlyerView extends SurfaceView implements Runnable {
     }
 
     public boolean onTouchEvent(MotionEvent event) {
+        if (gameOver) return false;
+
         if (event.getAction() == MotionEvent.ACTION_DOWN) {
             player.setAccelerationY(defaultOnTouchAccel);
             return true;
@@ -233,21 +227,15 @@ public class FlyerView extends SurfaceView implements Runnable {
         for (int i = 0; i < numSprites; i++) {
             int dx = -1 * (random.nextInt(maxEnemyVelocity) + minEnemyVelocity);
             float xPos = getWidth();
-            float yPos = random.nextInt(getHeight() - FLOOR_MARGIN - ((int) circleSize * 2))
+            float yPos = random.nextInt(getHeight() -
+                        FLOOR_MARGIN - CEILING_MARGIN - ((int) circleSize * 2))
                     + CEILING_MARGIN + circleSize;
             Paint paint = new Paint();
             paint.setARGB(255, 255, 0, 0);
 
-//            Sprite sprite = new Sprite(this, spriteImage,
-//                    xPos,
-//                    yPos,
-//                    circleSize,
-//                    circleSize);
             CircleSprite sprite = new CircleSprite(xPos, yPos, circleSize);
             sprite.setPaint(paint);
             sprite.setVelocityX(dx);
-//            sprite.setCollisionMargin(CIRCLE_COLLISION_MARGIN);
-//            sprite.setCollisionDebug();
             enemyList.add(sprite);
         }
     }
@@ -255,7 +243,7 @@ public class FlyerView extends SurfaceView implements Runnable {
     private void doEnemyBehavior() {
         for (CircleSprite sprite : enemyList) {
             if (sprite.collidesWith(player)) {
-                endGame();
+                setGameOver();
             }
 
             if (sprite.getX() + circleSize < 0) {
@@ -266,12 +254,14 @@ public class FlyerView extends SurfaceView implements Runnable {
         }
     }
 
-    public int getFrameCount() {
-        return frameCount;
-    }
-
     public void setContext(Context context) {
         this.context = context;
+    }
+
+    private void setGameOver() {
+        gameOver = true;
+        explosion = new Explosion(player.getX(), player.getY(), circleSize, 5,
+                3, player.getPaint(), 1000, 50, 200);
     }
 
     private void endGame() {
@@ -297,7 +287,7 @@ public class FlyerView extends SurfaceView implements Runnable {
 
                 holder.unlockCanvasAndPost(canvas);
                 long frameTime = System.currentTimeMillis() - startTime;
-                Log.d("ZZZ", String.valueOf(frameTime));
+//                Log.d("ZZZ", String.valueOf(frameTime));
             }
         }
     }
