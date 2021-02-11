@@ -20,8 +20,11 @@ public class Particle extends AbstractSprite {
     }
 
     @Override
-    public void move() {
-        collisionCircle.move(dx, dy);
+    public void move(long deltaTime) {
+        float moveX = dx * deltaTime / 1e9f;
+        float moveY = dy * deltaTime / 1e9f;
+
+        collisionCircle.move(moveX, moveY);
         lifetime--;
     }
 

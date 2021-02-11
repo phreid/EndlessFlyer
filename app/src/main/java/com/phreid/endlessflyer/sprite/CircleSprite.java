@@ -1,7 +1,7 @@
 package com.phreid.endlessflyer.sprite;
 
 import android.graphics.Canvas;
-import android.graphics.Paint;
+import android.util.Log;
 
 public class CircleSprite extends AbstractSprite {
 
@@ -15,8 +15,11 @@ public class CircleSprite extends AbstractSprite {
     }
 
     @Override
-    public void move() {
-        collisionCircle.move(dx, dy);
+    public void move(long deltaTime) {
+        float moveX = dx * deltaTime / 1e9f;
+        float moveY = dy * deltaTime / 1e9f;
+
+        collisionCircle.move(moveX, moveY);
 
         if (maxVelocityX > 0 && Math.abs(dx + accelerationX) < maxVelocityX) {
             dx += accelerationX;

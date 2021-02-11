@@ -18,7 +18,7 @@ public abstract class AbstractSprite {
 
     public abstract void draw(Canvas canvas);
 
-    public abstract void move();
+    public abstract void move(long deltaTime);
 
     public abstract boolean collidesWith(AbstractSprite other);
 

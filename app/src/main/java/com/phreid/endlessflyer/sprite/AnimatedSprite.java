@@ -4,6 +4,7 @@ import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.RectF;
+import android.util.Log;
 
 import java.util.List;
 
@@ -49,9 +50,12 @@ public class AnimatedSprite extends AbstractSprite {
     }
 
     @Override
-    public void move() {
-        positionRect.offset(dx, dy);
-        collisionCircle.move(dx, dy);
+    public void move(long deltaTime) {
+        float moveX = dx * deltaTime / 1e9f;
+        float moveY = dy * deltaTime / 1e9f;
+
+        positionRect.offset(moveX, moveY);
+        collisionCircle.move(moveX, moveY);
 
         if (maxVelocityX > 0 && Math.abs(dx + accelerationX) < maxVelocityX) {
             dx += accelerationX;

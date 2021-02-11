@@ -2,7 +2,6 @@ package com.phreid.endlessflyer.sprite;
 
 import android.graphics.Canvas;
 import android.graphics.Paint;
-import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,11 +33,27 @@ public class Explosion {
         }
     }
 
-    public void update(Canvas canvas) {
+//    public void update(Canvas canvas, long deltaTime) {
+//        for (Particle particle : particles) {
+//            if (particle.isAlive()) {
+//                particle.draw(canvas);
+//                particle.move(deltaTime);
+//            }
+//        }
+//    }
+
+    public void move(long deltaTime) {
+        for (Particle particle : particles) {
+            if (particle.isAlive()) {
+                particle.move(deltaTime);
+            }
+        }
+    }
+
+    public void draw(Canvas canvas) {
         for (Particle particle : particles) {
             if (particle.isAlive()) {
                 particle.draw(canvas);
-                particle.move();
             }
         }
     }

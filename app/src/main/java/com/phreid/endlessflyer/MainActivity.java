@@ -47,7 +47,6 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == SCORE_REQ_CODE) {
             if (resultCode == RESULT_OK) {
                 int newScore = data.getIntExtra("score", 0);
-                Log.d("test", String.valueOf(newScore));
                 if (newScore > highScore) {
                     scoreTextView.setText("High Score: " + newScore);
                     highScore = newScore;
