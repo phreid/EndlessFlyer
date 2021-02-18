@@ -33,15 +33,6 @@ public class Explosion {
         }
     }
 
-//    public void update(Canvas canvas, long deltaTime) {
-//        for (Particle particle : particles) {
-//            if (particle.isAlive()) {
-//                particle.draw(canvas);
-//                particle.move(deltaTime);
-//            }
-//        }
-//    }
-
     public void move(long deltaTime) {
         for (Particle particle : particles) {
             if (particle.isAlive()) {

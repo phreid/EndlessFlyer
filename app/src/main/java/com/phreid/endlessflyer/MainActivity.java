@@ -21,17 +21,37 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        TextView view = findViewById(R.id.high_score_text);
-        view.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+        hideUI();
+
+        updateHighScore();
+    }
+
+    private void hideUI() {
+        View view = getWindow().getDecorView();
+        view.setSystemUiVisibility(View.SYSTEM_UI_FLAG_IMMERSIVE
+                | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                 | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                 | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                | View.SYSTEM_UI_FLAG_FULLSCREEN // hide status bar
-                | View.SYSTEM_UI_FLAG_IMMERSIVE);
+                | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_FULLSCREEN);
+    }
 
+    private void updateHighScore() {
         SharedPreferences prefs = getPreferences(Context.MODE_PRIVATE);
         highScore = prefs.getInt(PREFS, 0);
+
+        TextView view = findViewById(R.id.high_score_text);
         view.setText("High Score: " + highScore);
     }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        updateHighScore();
+        hideUI();
+    }
+
+
 
     public void startGame(View view) {
         Intent intent = new Intent(this, GameActivity.class);
