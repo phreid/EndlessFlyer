@@ -10,21 +10,40 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Endless Flyer"
+        android:text="@string/main_title"
         android:textSize="25sp"
         android:layout_marginBottom="20dp"/>
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/start_game_button"
-        android:text="Start Game"
-        android:onClick="startGame"/>
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/high_score_text"
-        android:text="High Score: 0" />
+        android:text="@string/main_score" />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="50dp"
+        android:orientation="vertical"
+        android:layout_gravity="center">
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/start_game_button"
+            android:text="@string/main_start"
+            android:onClick="startGame"
+            android:layout_weight="1"/>
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/howto_button"
+            android:text="@string/main_howto"
+            android:layout_weight="1"
+            android:onClick="showHowToDialog"/>
+
+    </LinearLayout>
+
 
 </LinearLayout>

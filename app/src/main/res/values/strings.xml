@@ -1,3 +1,11 @@
 <resources>
     <string name="app_name">EndlessFlyer</string>
+    <string name="dialog_tap">Tap the screen to keep flying.</string>
+    <string name="dialog_avoid">Avoid enemies.</string>
+    <string name="dialog_collect">Collect stars to earn points.</string>
+    <string name="main_title">Endless Flyer</string>
+    <string name="main_score">High Score: %d</string>
+    <string name="main_start">Start Game</string>
+    <string name="main_howto">How to Play</string>
+    <string name="dialog_title">How to Play</string>
 </resources>

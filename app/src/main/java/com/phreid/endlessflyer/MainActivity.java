@@ -3,6 +3,7 @@ package com.phreid.endlessflyer;
 import android.content.Context;
 import android.content.Intent;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.FragmentManager;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -15,6 +16,7 @@ public class MainActivity extends AppCompatActivity {
     private int highScore = 0;
     private static final int SCORE_REQ_CODE = 123;
     private static final String PREFS = "EF_SCORE";
+    private static final String DIALOG_HOWTO = "DialogHowTo";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,7 +43,8 @@ public class MainActivity extends AppCompatActivity {
         highScore = prefs.getInt(PREFS, 0);
 
         TextView view = findViewById(R.id.high_score_text);
-        view.setText("High Score: " + highScore);
+        String scoreText = getString(R.string.main_score, highScore);
+        view.setText(scoreText);
     }
 
     @Override
@@ -51,11 +54,15 @@ public class MainActivity extends AppCompatActivity {
         hideUI();
     }
 
-
-
     public void startGame(View view) {
         Intent intent = new Intent(this, GameActivity.class);
         startActivityForResult(intent, SCORE_REQ_CODE);
+    }
+
+    public void showHowToDialog(View view) {
+        FragmentManager manager = getSupportFragmentManager();
+        HowToFragment dialog = new HowToFragment();
+        dialog.show(manager, DIALOG_HOWTO);
     }
 
     @Override
@@ -68,7 +75,8 @@ public class MainActivity extends AppCompatActivity {
             if (resultCode == RESULT_OK) {
                 int newScore = data.getIntExtra("score", 0);
                 if (newScore > highScore) {
-                    scoreTextView.setText("High Score: " + newScore);
+                    String scoreText = getString(R.string.main_score, newScore);
+                    scoreTextView.setText(scoreText);
                     highScore = newScore;
                 }
             }
