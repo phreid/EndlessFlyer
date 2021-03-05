@@ -24,8 +24,6 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         hideUI();
-
-        updateHighScore();
     }
 
     private void hideUI() {
@@ -40,7 +38,9 @@ public class MainActivity extends AppCompatActivity {
 
     private void updateHighScore() {
         SharedPreferences prefs = getPreferences(Context.MODE_PRIVATE);
-        highScore = prefs.getInt(PREFS, 0);
+        int savedScore = prefs.getInt(PREFS, 0);
+        if (savedScore > highScore)
+            highScore = savedScore;
 
         TextView view = findViewById(R.id.high_score_text);
         String scoreText = getString(R.string.main_score, highScore);
@@ -69,14 +69,10 @@ public class MainActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        TextView scoreTextView = (TextView) findViewById(R.id.high_score_text);
-
         if (requestCode == SCORE_REQ_CODE) {
             if (resultCode == RESULT_OK) {
                 int newScore = data.getIntExtra("score", 0);
                 if (newScore > highScore) {
-                    String scoreText = getString(R.string.main_score, newScore);
-                    scoreTextView.setText(scoreText);
                     highScore = newScore;
                 }
             }
